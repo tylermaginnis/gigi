@@ -1,0 +1,21 @@
+@startuml
+
+package "Reputation System" {
+    actor User
+    entity File
+    database DHT2
+    entity Rating
+    entity ReputationScore
+    entity Incentives
+
+    User -down-> File : "Access and Review"
+    File -down-> DHT2 : "Store Metadata"
+    User -down-> Rating : "Submit Rating"
+    Rating -down-> DHT2 : "Store Rating"
+    DHT2 -down-> ReputationScore : "Aggregate Ratings"
+    ReputationScore -down-> DHT2 : "Update Score"
+    DHT2 -down-> Incentives : "Award Badges"
+    Incentives -down-> User : "Earn Recognition"
+}
+
+@enduml

@@ -1,0 +1,37 @@
+@startuml
+
+package "Workflow" {
+    actor User
+    entity GigiFile
+    entity AsymmetricEncryption
+    database DHT1
+    actor DecryptionKeyHolder
+    entity EncryptedFile
+    entity ReEncryptionScheme
+    database DHT2
+    entity RevocationKey
+    entity ReEncryptedFile
+    entity CommunityMembers
+    entity SharedCommunityKey
+
+    User -down-> GigiFile : "Broadcast"
+    GigiFile -down-> AsymmetricEncryption : "Encrypt"
+    AsymmetricEncryption -down-> DHT1 : "Send Encrypted File"
+    
+    DHT1 -down-> DecryptionKeyHolder : "Retrieve Encrypted File"
+    DecryptionKeyHolder -down-> EncryptedFile : "Decrypt"
+    DecryptionKeyHolder -down-> ReEncryptionScheme : "Re-Encrypt"
+    ReEncryptionScheme -down-> DHT2 : "Submit Re-Encrypted File"
+    ReEncryptionScheme -down-> RevocationKey : "Generate and Store"
+    
+    ReEncryptedFile -down-> DHT2 : "Store"
+    DHT2 -down-> DecryptionKeyHolder : "Allow Revocation"
+    DecryptionKeyHolder -down-> RevocationKey : "Use if Necessary"
+    
+    CommunityMembers -down-> DHT2 : "Retrieve Approved Files"
+    DHT2 -down-> SharedCommunityKey : "Re-Encrypt to Shared Key"
+    SharedCommunityKey -down-> CommunityMembers : "Decrypt and Access Files"
+}
+
+@enduml
+

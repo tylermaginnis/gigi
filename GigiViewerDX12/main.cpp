@@ -18,6 +18,18 @@
 // This define is set in the example .vcxproj file and need to be replicated in your app or by adding it to your imconfig.h file.
 
 // clang-format off
+#include <opencv/opencv.hpp>
+#include <vector>
+
+// Global variables for webcam
+cv::VideoCapture cap;
+cv::Mat frame;
+GLuint textureID = 0;
+bool showWebcam = false;
+int selectedWebcamIndex = 0;
+int webcamFPS = 30;
+std::vector<std::string> webcamList;
+
 #include <DirectXMath.h>
 #include <DirectXMathMatrix.inl>
 
@@ -2741,6 +2753,21 @@ void ShowShaders()
     ImGui::End();
 }
 
+// Function to list available webcams
+void ListWebcams()
+{
+    webcamList.clear();
+    for (int i = 0; i < 10; ++i)
+    {
+        cv::VideoCapture tempCap(i);
+        if (tempCap.isOpened())
+        {
+            webcamList.push_back("Webcam " + std::to_string(i));
+            tempCap.release();
+        }
+    }
+}
+
 void ShowImportedResources()
 {
     if (!g_showWindows.ImportedResources || g_hideUI)
@@ -2845,6 +2872,53 @@ void ShowImportedResources()
                 g_importedResourcePresets.end()
             );
         }
+    }
+
+    // Webcam input UI
+    ImGui::Checkbox("Webcam", &showWebcam);
+    if (showWebcam)
+    {
+        if (webcamList.empty())
+            ListWebcams();
+
+        std::vector<const char*> webcamNames;
+        for (const std::string& name : webcamList)
+            webcamNames.push_back(name.c_str());
+
+        ImGui::Combo("Select Webcam", &selectedWebcamIndex, webcamNames.data(), (int)webcamNames.size());
+        ImGui::InputInt("FPS", &webcamFPS);
+
+        if (cap.isOpened())
+        {
+            cap.set(cv::CAP_PROP_FPS, webcamFPS);
+            cap >> frame;
+            if (!frame.empty())
+            {
+                if (textureID == 0)
+                {
+                    glGenTextures(1, &textureID);
+                    glBindTexture(GL_TEXTURE_2D, textureID);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+                    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                }
+
+                glBindTexture(GL_TEXTURE_2D, textureID);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame.cols, frame.rows, 0, GL_BGR, GL_UNSIGNED_BYTE, frame.data);
+
+                ImGui::Image((void*)(intptr_t)textureID, ImVec2(frame.cols, frame.rows));
+            }
+        }
+        else
+        {
+            cap.open(selectedWebcamIndex);
+            if (!cap.isOpened())
+                ImGui::Text("Failed to open webcam.");
+        }
+    }
+    else
+    {
+        if (cap.isOpened())
+            cap.release();
     }
 
     // Put the imported resources into alphabetical order

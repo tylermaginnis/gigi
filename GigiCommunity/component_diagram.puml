@@ -1,0 +1,17 @@
+@startuml
+
+package "Gigi Project Publication System" {
+    [User] --> [Gigi File]
+    [Gigi File] --> [Asymmetric Encryption]
+    [Asymmetric Encryption] --> [DHT1]
+    [DHT1] --> [Decryption Key Holder]
+    [Decryption Key Holder] --> [Re-Encryption Scheme]
+    [Re-Encryption Scheme] --> [DHT2]
+    [DHT2] --> [Community Members]
+    [DHT2] --> [Revocation Key]
+    [Revocation Key] --> [Decryption Key Holder]
+    [Community Members] --> [Shared Community Key]
+    [Shared Community Key] --> [Community Members]
+}
+
+@enduml

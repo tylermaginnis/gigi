@@ -1,0 +1,29 @@
+@startuml
+
+package "Threats and Mitigations" {
+    actor Attacker
+    entity DHT1
+    entity DecryptionKeyHolder
+    entity FilesInTransit
+    entity RevocationKey
+    entity System
+
+    package "Threats" {
+        Attacker -down-> DHT1 : "Unauthorized Access"
+        Attacker -down-> DecryptionKeyHolder : "Compromise Key"
+        Attacker -down-> FilesInTransit : "Tampering"
+        Attacker -down-> RevocationKey : "Misuse"
+        Attacker -down-> System : "Denial of Service"
+    }
+
+    package "Mitigations" {
+        DHT1 -down-> DecryptionKeyHolder : "Asymmetric Encryption"
+        DecryptionKeyHolder -down-> System : "Access Controls"
+        FilesInTransit -down-> System : "End-to-End Encryption"
+        RevocationKey -down-> System : "Secure Storage"
+        System -down-> System : "Rate Limiting"
+    }
+}
+
+@enduml
+
